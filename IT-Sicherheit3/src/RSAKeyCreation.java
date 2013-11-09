@@ -5,7 +5,7 @@
  * 'name' wird dabei als Argument beim Aufruf übergeben.
  * 
  * 
- * @author Timo Feddersen und Sergej ...
+ * @author Timo Feddersen und Sergej Kimel
  * @version 1.0
  */
 
@@ -116,8 +116,6 @@ public class RSAKeyCreation {
 		
 	}
 
-	
-	
 	
 	
 	/**
