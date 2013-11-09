@@ -48,14 +48,17 @@ public class RSAKeyCreation {
 	 */
 	public void generateKeyPair() {
 		try {
+			
 			// als Algorithmus verwenden wir RSA
 			KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+			
 			// mit gewünschter Schlüssellänge initialisieren
 			gen.initialize(2048);
+			
+			//Key Paar generieren
 			keyPair = gen.generateKeyPair();
 		
-			
-			
+
 		} catch (NoSuchAlgorithmException ex) {
 			Error("Es existiert kein KeyPairGenerator für RSA", ex);
 		}
