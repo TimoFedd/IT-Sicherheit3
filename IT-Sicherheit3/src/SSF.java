@@ -1,6 +1,9 @@
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -9,13 +12,19 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 
@@ -28,16 +37,17 @@ import javax.crypto.SecretKey;
 
 public class SSF {
 
-	String rsaPrv, rsaPub, dataOut, dataVerify;
-	PublicKey pubKey = null;     //Öffentlicher RSA Schlüssel
-	PrivateKey prvKey = null;    //Privater RSA Schlüssel
-	SecretKey aeskey = null;     //AES Schlüssel
-	byte[] signature = null;     //AES Signatur
+	String rsaPrv, rsaPub, dokument, dataVerify;
+	PublicKey pubKey = null;           //Öffentlicher RSA Schlüssel
+	PrivateKey prvKey = null;          //Privater RSA Schlüssel
+	byte[] aeskey = null;              //AES Schlüssel
+	byte[] signature = null;           //AES Signatur
+	byte[]   encryptedDokument = null; //Das mit AES verschlüsselte Dokument
 
-	public SSF(String rsaPrv, String rsaPub, String dataOut, String dataVerify) {
+	public SSF(String rsaPrv, String rsaPub, String dokument, String dataVerify) {
 		this.rsaPrv = rsaPrv;
 		this.rsaPub = rsaPub;
-		this.dataOut = dataOut;
+		this.dokument = dokument;
 		this.dataVerify = dataVerify;
 	}
 
@@ -55,11 +65,16 @@ public class SSF {
 		ssf.generateAESKey();
 		
 		//Signatur für den AES Schlüssel erstellen (mit dem Öffentlichen RSA Schlüssel)
-//		ssf.signAESKey();
+		ssf.signAESKey();
 		
 		//AES Schlüssel mit dem Privaten RSA Schlüssel verschlüsseln
-	//	ssf.encryptAESKey();
+		ssf.encryptAESKey();
+	
+		//Das Dokument mit dem AES Schlüssel verschlüsseln
+	    ssf.encryptDokument();
+	
 	}
+	
 
 	/**
 	 * Liest aus einer der Pub Datei, den Public RSA Schlüssel aus, Und
@@ -159,11 +174,10 @@ public class SSF {
 
 			// nun wird aus der Kodierung wieder ein Privater Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
-			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation
-			// erzeugen
-			X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(prvKeyEnc);
+			// aus dem Byte-Array können wir eine PKCS8-Schlüsselspezifikationerzeugen
+			EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvKeyEnc);                         //warum PKCS8???
 			// und in einen abgeschlossene, providerabhängigen Schlüssel konvertieren
-			prvKey = keyFac.generatePrivate(x509KeySpec);
+			prvKey = keyFac.generatePrivate(privateKeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
 			Error("Es existiert keine Implementierung für RSA.", e);
@@ -189,7 +203,8 @@ public class SSF {
 			// AES-Schlüssel generieren
 			kg = KeyGenerator.getInstance("AES");
 			kg.init(128); // Schlüssellänge 128 Bit
-			aeskey = kg.generateKey();
+			aeskey = kg.generateKey().getEncoded();
+			
 
 		} catch (NoSuchAlgorithmException e) {
 			Error("Es existiert keine Implementierung für AES.", e);
@@ -213,7 +228,7 @@ public class SSF {
 					// zum Signieren benötigen wir den geheimen Schlüssel
 					rsaSig.initSign(prvKey);
 					// Daten zum Signieren liefern
-					rsaSig.update(aeskey.getEncoded());
+					rsaSig.update(aeskey);
 					// Signatur für die Daten erzeugen
 					signature = rsaSig.sign();
 				} catch (NoSuchAlgorithmException ex) {
@@ -255,30 +270,60 @@ public class SSF {
 	 * Verschlüsselt mit dem AES Key, das Dokument
 	 */
 	
-	public void encryptDataout(){
+	public void encryptDokument(){
+
 	try {
-			//AES Cipher objekt erzeugen
-			Cipher cipher = Cipher.getInstance("AES");
-			
-			//Cipher Objekt mit dem aeskey initialisieren
-			cipher.init(Cipher.ENCRYPT_MODE, aeskey);
-			
-			System.out.println("Cipher Parameter: "
-					+ cipher.getParameters().toString());
-			AlgorithmParameters ap = cipher.getParameters();
-			
-			
-			
-			
-			
-			
-		} catch (NoSuchAlgorithmException e) {
-			Error("Keine Implementierung für RSA", e);
-		} catch (NoSuchPaddingException e) {
-			Error("", e);
-		} catch (InvalidKeyException e) {
-			Error("", e);
-		}
+		
+		DataInputStream is = new DataInputStream(new FileInputStream(dokument));
+		
+		//Ciper Objekt erzeugen
+		Cipher encryptCipher = Cipher.getInstance("AES");
+		SecretKeySpec specKey = new SecretKeySpec(aeskey, "AES");
+		
+		//Ciper initialisieren
+		encryptCipher.init(Cipher.ENCRYPT_MODE, specKey);
+		
+		//Dokument komplett einlesen
+		File file = new File( dokument);  //geht das auch anders???
+		int len = (int) file.length();
+		byte buf[] = new byte[len];
+		is.read( buf, 0, len);
+		is.close();
+			  
+		//Dokoment verschlüsseln
+	    encryptedDokument = encryptCipher.doFinal(buf);
+
+		  		
+	  //Dokument testweise wieder entschlüsseln
+//			Cipher encryptCipher2;
+//			encryptCipher2 = Cipher.getInstance("AES");
+//			SecretKeySpec specKey2 = new SecretKeySpec(aeskey, "AES");
+//			encryptCipher.init(Cipher.DECRYPT_MODE, specKey2);
+//			
+//			byte[] encryptedBytes2 = null;
+//		    encryptedBytes2 = encryptCipher.doFinal(encryptedDokument);
+//            String s3 = new String(encryptedBytes2);
+//			System.out.println(s3);
+//		  
+//		  
+		  
+		
+	} catch (NoSuchAlgorithmException e) {
+		Error("", e);
+	} catch (NoSuchPaddingException e) {
+		Error("", e);
+	} catch (InvalidKeyException e) {
+		Error("", e);
+	} catch (FileNotFoundException e) {
+		Error("", e);
+	} catch (IOException e) {
+		Error("", e);
+	} catch (IllegalBlockSizeException e) {
+		Error("", e);
+	} catch (BadPaddingException e) {
+		Error("", e);
+	}
+	 
 		
 	}
 
