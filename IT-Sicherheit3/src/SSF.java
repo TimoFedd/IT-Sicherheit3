@@ -1,7 +1,9 @@
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.security.AlgorithmParameters;
@@ -65,8 +67,7 @@ public class SSF {
 		// AES Schlüssel erzeugen
 		ssf.generateAESKey();
 
-		// Signatur für den AES Schlüssel erstellen (mit dem Öffentlichen RSA
-		// Schlüssel)
+		// Signatur für den AES Schlüssel erstellen (mit dem Öffentlichen RSA Schlüssel)
 		ssf.signAESKey();
 
 		// AES Schlüssel mit dem Privaten RSA Schlüssel verschlüsseln
@@ -74,6 +75,9 @@ public class SSF {
 
 		// Das Dokument mit dem AES Schlüssel verschlüsseln
 		ssf.encryptDokument();
+		
+		//Daten in eine ssf Datei schreiben
+		ssf.writeToFile();
 
 	}
 
@@ -115,11 +119,9 @@ public class SSF {
 
 		try {
 
-			// nun wird aus der Kodierung wieder ein Öffentlidcher Schlüssel
-			// erzeugt
+			// nun wird aus der Kodierung wieder ein Öffentlidcher Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
-			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation
-			// erzeugen
+			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation erzeugen
 			X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(pubKeyEnc);
 
 			// und in einen abgeschlossene, providerabhängigen Schlüssel
@@ -175,12 +177,9 @@ public class SSF {
 
 			// nun wird aus der Kodierung wieder ein Privater Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
-			// aus dem Byte-Array können wir eine
-			// PKCS8-Schlüsselspezifikationerzeugen
-			EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvKeyEnc); // warum
-																				// PKCS8???
-			// und in einen abgeschlossene, providerabhängigen Schlüssel
-			// konvertieren
+			// aus dem Byte-Array können wir eine PKCS8-Schlüsselspezifikationerzeugen
+			EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvKeyEnc); // warum PKCS8???
+			// und in einen abgeschlossene, providerabhängigen Schlüssel konvertieren
 			prvKey = keyFac.generatePrivate(privateKeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
@@ -328,6 +327,44 @@ public class SSF {
 			Error("", e);
 		}
 
+	}
+	
+	
+	/**
+	 * Schreibt vollgene Daten in eine .ssf Datei:
+	 * Länge des verschlüsselten geheimen Schlüssels (integer)
+	 * Verschlüsselter geheimer Schlüssel (Bytefolge)
+	 * Länge der Signatur des geheimen Schlüssels (integer)
+	 * Signatur des geheimen Schlüssels (Bytefolge)
+	 * Verschlüsselte Dateidaten (Bytefolge)
+	 * 
+	 */
+	
+	public void writeToFile(){
+		
+		//löscht die Dateierweiterung
+		String ssfFile = dokument.substring(0, dokument.length()-3);
+		
+		try {
+			
+			//Erstellt einen neuen Output Stream
+			DataOutputStream out = new DataOutputStream((new FileOutputStream(ssfFile+".ssf")));
+			
+			//Daten in Datei Schreiben
+			out.writeInt(encryptedAesKey.length);
+			out.write(encryptedAesKey);
+			out.writeInt(signature.length);
+			out.write(signature);
+            out.write(encryptedDokument); 
+			
+			
+		} catch (FileNotFoundException e) {
+			Error("writeToFile(): Datei Fehler beim schreiben der Nachricht", e);
+		} catch (IOException e) {
+			Error("writeToFile(): Datei Fehler beim schreiben der Nachricht", e);
+		}
+		
+		
 	}
 
 	/**
