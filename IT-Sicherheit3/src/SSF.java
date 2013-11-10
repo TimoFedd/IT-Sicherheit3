@@ -98,7 +98,7 @@ public class SSF {
 			inhaber = new byte[len];
 			// der Inhaber
 			is.read(inhaber);
-
+			
 			// die Länge des schlüssels
 			len = is.readInt();
 			pubKeyEnc = new byte[len];
@@ -108,7 +108,7 @@ public class SSF {
 			is.close();
 
 		} catch (IOException e) {
-			Error("Datei-Fehler beim Lesen der Nachricht!", e);
+			Error("readRSAPublic(): Datei-Fehler beim Lesen der Nachricht!", e);
 		}
 
 		KeyFactory keyFac;
@@ -127,9 +127,9 @@ public class SSF {
 			pubKey = keyFac.generatePublic(x509KeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
-			Error("Es existiert keine Implementierung für RSA.", e);
+			Error("readRSAPublic(): Es existiert keine Implementierung für RSA.", e);
 		} catch (InvalidKeySpecException e) {
-			Error("Fehler beim Konvertieren des Öffentlichen Schlüssels.", e);
+			Error("readRSAPublic() :Fehler beim Konvertieren des Öffentlichen Schlüssels.", e);
 			e.printStackTrace();
 		}
 
@@ -166,7 +166,7 @@ public class SSF {
 			is.close();
 
 		} catch (IOException e) {
-			Error("Datei-Fehler beim Lesen der Nachricht!", e);
+			Error("readRSAPrivate(): Datei-Fehler beim Lesen der Nachricht!", e);
 		}
 
 		KeyFactory keyFac;
@@ -184,9 +184,9 @@ public class SSF {
 			prvKey = keyFac.generatePrivate(privateKeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
-			Error("Es existiert keine Implementierung für RSA.", e);
+			Error("readRSAPrivate(): Es existiert keine Implementierung für RSA.", e);
 		} catch (InvalidKeySpecException e) {
-			Error("Fehler beim Konvertieren des Privaten Schlüssels.", e);
+			Error("readRSAPrivate(): Fehler beim Konvertieren des Privaten Schlüssels.", e);
 			e.printStackTrace();
 		}
 
@@ -207,7 +207,7 @@ public class SSF {
 			aeskey = kg.generateKey().getEncoded();
 
 		} catch (NoSuchAlgorithmException e) {
-			Error("Es existiert keine Implementierung für AES.", e);
+			Error("generateAESKey(): Es existiert keine Implementierung für AES.", e);
 		}
 
 	}
@@ -230,12 +230,12 @@ public class SSF {
 			// Signatur für die Daten erzeugen
 			signature = rsaSig.sign();
 		} catch (NoSuchAlgorithmException ex) {
-			Error("Keine Implementierung für SHA1withRSA!", ex);
+			Error("signAESKey(): Keine Implementierung für SHA1withRSA!", ex);
 
 		} catch (InvalidKeyException e) {
-			Error("Falscher Schlüssel!", e);
+			Error("signAESKey(): Falscher Schlüssel!", e);
 		} catch (SignatureException e) {
-			Error("Fehler beim Signieren der Nachricht!", e);
+			Error("signAESKey(): Fehler beim Signieren der Nachricht!", e);
 		}
 	}
 
@@ -251,14 +251,14 @@ public class SSF {
 			Cipher cipher = Cipher.getInstance("RSA");
 
 			// Cipher Objekt initialisieren
-			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+			cipher.init(Cipher.ENCRYPT_MODE, prvKey);
 
 			// AES Schlüssel verschlüsseln
 			encryptedAesKey = cipher.doFinal(aeskey);
 			
 
 		} catch (NoSuchAlgorithmException e) {
-			Error("Keine Implementierung für RSA", e);
+			Error("encryptAESKey(): Keine Implementierung für RSA", e);
 		} catch (NoSuchPaddingException e) {
 			Error("", e);
 		} catch (InvalidKeyException e) {

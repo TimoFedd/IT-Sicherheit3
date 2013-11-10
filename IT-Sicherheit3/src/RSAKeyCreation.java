@@ -9,6 +9,7 @@
  * @version 1.0
  */
 
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,8 +24,8 @@ public class RSAKeyCreation {
 	private KeyPair keyPair = null;
 	
 	//Output Steams
-	FileOutputStream pub = null;
-	FileOutputStream prv = null;
+	DataOutputStream pub = null;
+	DataOutputStream prv = null;
 	
 
 
@@ -40,9 +41,6 @@ public class RSAKeyCreation {
 		rc.writeKeyPair();
 	}
 
-	
-	
-	
 	/**
 	 * Diese Methode generiert ein neues Schlüsselpaar.
 	 */
@@ -78,8 +76,8 @@ public class RSAKeyCreation {
 	public void writeKeyPair() {
 
 		try {
-			pub = new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".pub");   //System.getProperty("user.dir"))\\Desktop\\"+inhaber+".prv"
-			prv = new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".prv");
+			pub = new DataOutputStream((new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".pub")));   //System.getProperty("user.dir"))\\Desktop\\"+inhaber+".prv"
+			prv = new DataOutputStream((new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".prv")));
 		} catch (FileNotFoundException e) {
 			Error("Fehler beim erstellen der Schlüssel Datei ",e);
 			e.printStackTrace();
@@ -87,9 +85,11 @@ public class RSAKeyCreation {
 		
 	
 		try {
+		
 			//Länge des Inhaber-Namens
-			pub.write(inhaber.length());
-		    prv.write(inhaber.length());
+			pub.writeInt(inhaber.length());
+		    prv.writeInt(inhaber.length());
+		    
 		    
 		    //inhaber Name
 		    pub.write(inhaber.getBytes());
@@ -98,12 +98,12 @@ public class RSAKeyCreation {
 		    //Länge des Schlüssels und Schlüssel an sich
 		    PublicKey pubKey = keyPair.getPublic();
 			byte[] pubKeyEnc = pubKey.getEncoded();
-			pub.write(pubKeyEnc.length);
+			pub.writeInt(pubKeyEnc.length);
 			pub.write(pubKeyEnc);
 			
 			PrivateKey prvKey = keyPair.getPrivate();
 			byte[] prvKeyEnc = prvKey.getEncoded();
-		    prv.write(prvKeyEnc.length);
+		    prv.writeInt(prvKeyEnc.length);
 		    prv.write(prvKeyEnc);
 		    
 		} catch (IOException e) {
@@ -111,9 +111,7 @@ public class RSAKeyCreation {
 			e.printStackTrace();
 		}
 		
-		
-		
-		
+			
 	}
 
 	
