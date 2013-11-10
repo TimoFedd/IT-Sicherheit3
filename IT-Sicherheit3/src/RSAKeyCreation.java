@@ -80,7 +80,6 @@ public class RSAKeyCreation {
 			prv = new DataOutputStream((new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".prv")));
 		} catch (FileNotFoundException e) {
 			Error("Fehler beim erstellen der Schlüssel Datei ",e);
-			e.printStackTrace();
 		}
 		
 	
@@ -108,7 +107,6 @@ public class RSAKeyCreation {
 		    
 		} catch (IOException e) {
 			Error("Fehler beim erstellen der Schlüssel Datei ",e);
-			e.printStackTrace();
 		}
 		
 			

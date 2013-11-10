@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 
- * SSF, verschlüsselt und signiert mit Hilfe von RSA und AES eine Datei
+ * Ein Objekt der Klasse SSF verschlüsselt und signiert mit Hilfe von RSA und AES eine Datei
  * 
  * 
  * @author Timo Feddersen und Sergej Kimel
@@ -34,7 +34,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class SSF {
 
-	String rsaPrv, rsaPub, dokument, dataVerify;
+	String rsaPrv, rsaPub, dokument, dataVerify;  //Eingabeparameter
 	PublicKey pubKey = null;   // Öffentlicher RSA Schlüssel
 	PrivateKey prvKey = null;  // Privater RSA Schlüssel
 	byte[] aeskey = null;      // AES Schlüssel
@@ -77,7 +77,7 @@ public class SSF {
 	}
 
 	/**
-	 * Liest aus einer der Pub Datei, den Public RSA Schlüssel aus, Und
+	 * Diese Methode liest aus einer der Pub Datei, den Public RSA Schlüssel aus, Und
 	 * generiert daraus ein neues PublicKey Objekt
 	 * 
 	 */
@@ -114,7 +114,7 @@ public class SSF {
 
 		try {
 
-			// nun wird aus der Kodierung wieder ein Öffentlidcher Schlüssel erzeugt
+			// nun wird aus der Kodierung wieder ein Öffentlicher Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
 			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation erzeugen
 			X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(pubKeyEnc);
@@ -132,7 +132,7 @@ public class SSF {
 	}
 
 	/**
-	 * Liest aus einer der prv Datei, den Private RSA Schlüssel aus, Und
+	 * Diese Methode liest aus einer der prv Datei, den Private RSA Schlüssel aus, Und
 	 * generiert daraus ein neues PrivateKey Objekt
 	 * 
 	 */
@@ -186,7 +186,7 @@ public class SSF {
 	}
 
 	/**
-	 * Erzeugt einen 128bit AES Schlüssel
+	 * Diese Methode erzeugt einen 128bit AES Schlüssel
 	 */
 
 	public void generateAESKey() {
@@ -206,7 +206,7 @@ public class SSF {
 	}
 
 	/**
-	 * Erstellt eine Signatur des AES Schlüssels mit dem privaten RSA Schlüssel
+	 * Diese Methode erstellt eine Signatur des AES Schlüssels mit dem privaten RSA Schlüssel
 	 */
 
 	public void signAESKey() {
@@ -233,7 +233,7 @@ public class SSF {
 	}
 
 	/**
-	 * Verschlüsselt den AES Schlüssel mit dem Privaten RSA Schlüssel
+	 * Diese Methode verschlüsselt den AES Schlüssel mit dem Privaten RSA Schlüssel
 	 */
 
 	public void encryptAESKey() {
@@ -253,11 +253,11 @@ public class SSF {
 		} catch (NoSuchAlgorithmException e) {
 			Error("encryptAESKey(): Keine Implementierung für RSA", e);
 		} catch (NoSuchPaddingException e) {
-			Error("", e);
+			Error("encryptAESKey(): Keine Implementierung für das Padding", e);
 		} catch (InvalidKeyException e) {
-			Error("", e);
+			Error("encryptAESKey(): Falscher Schlüssel!", e);
 		} catch (IllegalBlockSizeException e) {
-			Error("", e);
+			Error("encryptAESKey(): Falsche Blockgröße!", e);
 		} catch (BadPaddingException e) {
 			Error("", e);
 		}
@@ -265,7 +265,7 @@ public class SSF {
 	}
 
 	/**
-	 * Verschlüsselt mit dem AES Key, das Dokument
+	 * Diese Methode verschlüsselt mit dem AES Key, das Dokument
 	 */
 
 	public void encryptDokument() {
@@ -306,26 +306,26 @@ public class SSF {
 			//
 
 		} catch (NoSuchAlgorithmException e) {
-			Error("", e);
+			Error("encryptDokument(): Keine Implementierung für AES", e);
 		} catch (NoSuchPaddingException e) {
-			Error("", e);
+			Error("encryptDokument(): Keine Implementierung für das Padding", e);
 		} catch (InvalidKeyException e) {
-			Error("", e);
+			Error("encryptDokument(): Ungültig Formatierter Schlüssel", e);
 		} catch (FileNotFoundException e) {
-			Error("", e);
+			Error("encryptDokument(): Datei Fehler", e);
 		} catch (IOException e) {
-			Error("", e);
+			Error("encryptDokument(): Datei Fehler", e);
 		} catch (IllegalBlockSizeException e) {
-			Error("", e);
+			Error("encryptDokument(): Falsche Blockgroesse", e);
 		} catch (BadPaddingException e) {
-			Error("", e);
+			Error("encryptDokument(): Padding Fehler", e);
 		}
 
 	}
 	
 	
 	/**
-	 * Schreibt vollgene Daten in eine .ssf Datei:
+	 * Diese Methode schreibt vollgende Daten in eine .ssf Datei:
 	 * Länge des verschlüsselten geheimen Schlüssels (integer)
 	 * Verschlüsselter geheimer Schlüssel (Bytefolge)
 	 * Länge der Signatur des geheimen Schlüssels (integer)
