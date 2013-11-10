@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -18,14 +16,11 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -124,8 +119,7 @@ public class SSF {
 			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation erzeugen
 			X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(pubKeyEnc);
 
-			// und in einen abgeschlossene, providerabhängigen Schlüssel
-			// konvertieren
+			// und in einen abgeschlossene, providerabhängigen Schlüssel konvertieren
 			pubKey = keyFac.generatePublic(x509KeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
@@ -356,7 +350,7 @@ public class SSF {
 			out.writeInt(signature.length);
 			out.write(signature);
             out.write(encryptedDokument); 
-			
+			out.close();
 			
 		} catch (FileNotFoundException e) {
 			Error("writeToFile(): Datei Fehler beim schreiben der Nachricht", e);
