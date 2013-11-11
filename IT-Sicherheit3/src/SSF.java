@@ -34,7 +34,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class SSF {
 
-	String rsaPrv, rsaPub, dokument, dataVerify;  //Eingabeparameter
+	String rsaPrv, rsaPub, dokument, ssfFile;  //Eingabeparameter
 	PublicKey pubKey = null;   // Öffentlicher RSA Schlüssel
 	PrivateKey prvKey = null;  // Privater RSA Schlüssel
 	byte[] aeskey = null;      // AES Schlüssel
@@ -42,11 +42,11 @@ public class SSF {
 	byte[] signature = null;   // AES Signatur
 	byte[] encryptedDokument = null; // Das mit AES verschlüsselte Dokument
 
-	public SSF(String rsaPrv, String rsaPub, String dokument, String dataVerify) {
+	public SSF(String rsaPrv, String rsaPub, String dokument, String ssfFile) {
 		this.rsaPrv = rsaPrv;
 		this.rsaPub = rsaPub;
 		this.dokument = dokument;
-		this.dataVerify = dataVerify;
+		this.ssfFile = ssfFile;
 	}
 
 	public static void main(String[] args) {
@@ -336,13 +336,11 @@ public class SSF {
 	
 	public void writeToFile(){
 		
-		//löscht die Dateierweiterung
-		String ssfFile = dokument.substring(0, dokument.length()-3);
 		
 		try {
 			
 			//Erstellt einen neuen Output Stream
-			DataOutputStream out = new DataOutputStream((new FileOutputStream(ssfFile+".ssf")));
+			DataOutputStream out = new DataOutputStream((new FileOutputStream(ssfFile)));
 			
 			//Daten in Datei Schreiben
 			out.writeInt(encryptedAesKey.length);
