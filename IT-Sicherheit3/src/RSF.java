@@ -10,6 +10,8 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -58,6 +60,14 @@ public class RSF {
 
 		// Dokument enschluesseln und in die Augabe Datei schreiben
 		rsf.decryptDokument();
+
+		// signatur checken
+		Boolean ok = rsf.verify();
+		
+		//wenn signatur Fehlerhaft, Fehler ausgabe
+		if(ok == false){
+			System.out.println("Die Signatur ist Fehlerhaft!!!");
+		}
 	}
 
 	/**
@@ -277,11 +287,12 @@ public class RSF {
 			// System.out.println(s3);
 
 			// Erstellt einen neuen Output Stream
-			DataOutputStream out = new DataOutputStream((new FileOutputStream(dokument)));
-			
+			DataOutputStream out = new DataOutputStream((new FileOutputStream(
+					dokument)));
+
 			// Schreibt Daten in die Ausgabedatei
 			out.write(decryptedDokument);
-			
+
 			// Schließen der Datei
 			out.close();
 
@@ -301,6 +312,39 @@ public class RSF {
 			Error("decryptDokument(): Datei Fehler", e);
 		}
 
+	}
+
+	/**
+	 * 
+	 * Diese Methode entschlüsselt die Signatur mit dem öffentlichen
+	 * RSA-Schlüssel Und vergleicht in mit dem AES Schluessel
+	 */
+
+	private boolean verify() {
+
+		try {
+
+			// Nun wird die Signatur überprüft
+			// als Erstes erzeugen wir das Signatur-Objekt
+			Signature rsaSig = Signature.getInstance("SHA1withRSA");
+
+			// zum Verifizieren benötigen wir den öffentlichen Schlüssel
+			rsaSig.initVerify(pubKey);
+
+			// Daten zum Verifizieren liefern
+			rsaSig.update(aeskey);  //oder encryptedAesKey???
+
+			return rsaSig.verify(signature);
+
+		} catch (InvalidKeyException e) {
+			Error("verify()", e);
+		} catch (SignatureException e) {
+			Error("verify()", e);
+		} catch (NoSuchAlgorithmException e) {
+			Error("verify()", e);
+		}
+
+		return true;
 	}
 
 	/**
