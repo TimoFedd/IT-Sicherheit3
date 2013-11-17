@@ -244,7 +244,6 @@ public class SSF {
 	public void encryptAESKey() {
 
 		try {
-
 			// Cipher Objekt erzeugen
 			Cipher cipher = Cipher.getInstance("RSA");
 
@@ -254,7 +253,7 @@ public class SSF {
 			// AES Schlüssel verschlüsseln
 			encryptedAesKey = cipher.doFinal(aeskey);
 			
-
+		
 		} catch (NoSuchAlgorithmException e) {
 			Error("encryptAESKey(): Keine Implementierung für RSA", e);
 		} catch (NoSuchPaddingException e) {
@@ -293,10 +292,10 @@ public class SSF {
 			byte buf[] = new byte[len];
 			is.read(buf, 0, len);
 			is.close();
-			// Dokoment verschlüsseln
+			// Dokument verschlüsseln
 			encryptedDokument = encryptCipher.doFinal(buf);
 
-			
+
 			
 		} catch (NoSuchAlgorithmException e) {
 			Error("encryptDokument(): Keine Implementierung für AES", e);

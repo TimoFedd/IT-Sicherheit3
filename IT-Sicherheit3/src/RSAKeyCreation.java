@@ -76,8 +76,8 @@ public class RSAKeyCreation {
 	public void writeKeyPair() {
 
 		try {
-			pub = new DataOutputStream((new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".pub")));   //System.getProperty("user.dir"))\\Desktop\\"+inhaber+".prv"
-			prv = new DataOutputStream((new FileOutputStream("C:\\Users\\Timo\\Desktop\\"+inhaber+".prv")));
+			pub = new DataOutputStream((new FileOutputStream(inhaber+".pub")));  
+			prv = new DataOutputStream((new FileOutputStream(inhaber+".prv")));
 		} catch (FileNotFoundException e) {
 			Error("Fehler beim erstellen der Schlüssel Datei ",e);
 		}

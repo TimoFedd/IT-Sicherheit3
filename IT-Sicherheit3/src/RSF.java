@@ -16,6 +16,7 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -48,25 +49,31 @@ public class RSF {
 
 		// Public Key einlesen+
 		rsf.readRSAPublic();
-
-		// Private Key einlesen
+        System.out.println("Public Key wurde erfolgreich eingelesen");
+		
+        // Private Key einlesen
 		rsf.readRSAPrivate();
-
+        System.out.println("Private Key wurde erfolgreich eingelesen");
+        
 		// ssf Datei einlesen
 		rsf.readSsfFile();
 
 		// geheimen Schlüssel entschlüsseln
 		rsf.decryptAESKey();
-
+		System.out.println("Der geheime Schlüssel wurde erfolgreich entschlüsselt");
+		
 		// Dokument enschluesseln und in die Augabe Datei schreiben
 		rsf.decryptDokument();
-
+		System.out.println("Das Dokument wurde erfolgreich entschlüsselt");
+		
 		// signatur checken
 		Boolean ok = rsf.verify();
 		
 		//wenn signatur Fehlerhaft, Fehler ausgabe
 		if(ok == false){
 			System.out.println("Die Signatur ist Fehlerhaft!!!");
+		}else{
+			System.out.println("Die Signatur stimmt überein");
 		}
 	}
 
@@ -106,15 +113,13 @@ public class RSF {
 
 		try {
 
-			// nun wird aus der Kodierung wieder ein Öffentlicher Schlüssel
-			// erzeugt
+			// nun wird aus der Kodierung wieder ein Öffentlicher Schlüssel erzeugt
 			KeyFactory keyFac = KeyFactory.getInstance("RSA");
-			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation
-			// erzeugen
+			
+			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation erzeugen
 			X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(pubKeyEnc);
 
-			// und in einen abgeschlossene, providerabhängigen Schlüssel
-			// konvertieren
+			// und in einen abgeschlossene, providerabhängigen Schlüssel konvertieren
 			pubKey = keyFac.generatePublic(x509KeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
@@ -168,12 +173,11 @@ public class RSF {
 
 			// nun wird aus der Kodierung wieder ein Privater Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
-			// aus dem Byte-Array können wir eine
-			// PKCS8-Schlüsselspezifikationerzeugen
-			EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvKeyEnc); // warum
-																				// PKCS8???
-			// und in einen abgeschlossene, providerabhängigen Schlüssel
-			// konvertieren
+			
+			// aus dem Byte-Array können wir eine PKCS8-Schlüsselspezifikationerzeugen
+			EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvKeyEnc); 
+																			
+			// und in einen abgeschlossene, providerabhängigen Schlüssel konvertieren
 			prvKey = keyFac.generatePrivate(privateKeySpec);
 
 		} catch (NoSuchAlgorithmException e) {
@@ -219,10 +223,11 @@ public class RSF {
 			// Verschlüsselte Dokument Daten einlesen
 			File file = new File(ssfFile); // geht das auch anders???
 			int laenge = (int) file.length();
-			encryptedDokument = new byte[laenge];
-			is.read(encryptedDokument, laengeAES + laengeSignatur, laenge);
+			encryptedDokument = new byte[laenge-(laengeAES+laengeSignatur+8)];
+			is.read(encryptedDokument, 0, encryptedDokument.length);
 			is.close();
-
+			
+			
 		} catch (FileNotFoundException e) {
 			Error("readSsfFile(): Fehler beim einlesen der ssf Datei.", e);
 		} catch (IOException e) {
@@ -246,6 +251,7 @@ public class RSF {
 
 			// AES Schlüssel entschlüsseln
 			aeskey = cipher.doFinal(encryptedAesKey);
+
 
 		} catch (NoSuchAlgorithmException e) {
 			Error("decryptAESKey(): Keine Implementierung für RSA", e);
@@ -275,23 +281,19 @@ public class RSF {
 			// Cipher Instance erzeugen
 			Cipher cipher = Cipher.getInstance("AES");
 
-			SecretKeySpec specKey2 = new SecretKeySpec(aeskey, "AES");
+			SecretKeySpec specKey = new SecretKeySpec(aeskey, "AES");
 
 			// Cipher Objekt initialisieren
-			cipher.init(Cipher.DECRYPT_MODE, specKey2);
+			cipher.init(Cipher.DECRYPT_MODE, specKey);
 
 			// Dokument entschlüsseln
 			decryptedDokument = cipher.doFinal(encryptedDokument);
 
-			// String s3 = new String(encryptedBytes2);
-			// System.out.println(s3);
-
 			// Erstellt einen neuen Output Stream
-			DataOutputStream out = new DataOutputStream((new FileOutputStream(
-					dokument)));
+			DataOutputStream out = new DataOutputStream((new FileOutputStream(dokument)));
 
 			// Schreibt Daten in die Ausgabedatei
-			out.write(decryptedDokument);
+		    out.write(decryptedDokument);
 
 			// Schließen der Datei
 			out.close();
@@ -307,9 +309,9 @@ public class RSF {
 		} catch (BadPaddingException e) {
 			Error("decryptDokument(): Padding Fehler", e);
 		} catch (FileNotFoundException e) {
-			Error("decryptDokument(): Datei Fehler", e);
+			Error("decryptDokument(): Datei Fehler Fehler", e);
 		} catch (IOException e) {
-			Error("decryptDokument(): Datei Fehler", e);
+			Error("decryptDokument(): Datei Fehler Fehler", e);
 		}
 
 	}
