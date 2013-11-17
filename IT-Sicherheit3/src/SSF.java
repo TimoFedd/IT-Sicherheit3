@@ -16,6 +16,8 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -116,6 +118,7 @@ public class SSF {
 
 			// nun wird aus der Kodierung wieder ein Öffentlicher Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
+			
 			// aus dem Byte-Array können wir eine X.509-Schlüsselspezifikation erzeugen
 			X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(pubKeyEnc);
 
@@ -171,8 +174,10 @@ public class SSF {
 
 			// nun wird aus der Kodierung wieder ein Privater Schlüssel erzeugt
 			keyFac = KeyFactory.getInstance("RSA");
+			
 			// aus dem Byte-Array können wir eine PKCS8-Schlüsselspezifikationerzeugen
 			EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(prvKeyEnc); // warum PKCS8???
+			
 			// und in einen abgeschlossene, providerabhängigen Schlüssel konvertieren
 			prvKey = keyFac.generatePrivate(privateKeySpec);
 
@@ -244,7 +249,7 @@ public class SSF {
 			Cipher cipher = Cipher.getInstance("RSA");
 
 			// Cipher Objekt initialisieren
-			cipher.init(Cipher.ENCRYPT_MODE, prvKey);
+			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
 
 			// AES Schlüssel verschlüsseln
 			encryptedAesKey = cipher.doFinal(aeskey);
@@ -288,23 +293,11 @@ public class SSF {
 			byte buf[] = new byte[len];
 			is.read(buf, 0, len);
 			is.close();
-
 			// Dokoment verschlüsseln
 			encryptedDokument = encryptCipher.doFinal(buf);
 
-			// Dokument testweise wieder entschlüsseln
-			// Cipher encryptCipher2;
-			// encryptCipher2 = Cipher.getInstance("AES");
-			// SecretKeySpec specKey2 = new SecretKeySpec(aeskey, "AES");
-			// encryptCipher.init(Cipher.DECRYPT_MODE, specKey2);
-			//
-			// byte[] encryptedBytes2 = null;
-			// encryptedBytes2 = encryptCipher.doFinal(encryptedDokument);
-			// String s3 = new String(encryptedBytes2);
-			// System.out.println(s3);
-			//
-			//
-
+			
+			
 		} catch (NoSuchAlgorithmException e) {
 			Error("encryptDokument(): Keine Implementierung für AES", e);
 		} catch (NoSuchPaddingException e) {
@@ -347,7 +340,7 @@ public class SSF {
 			out.write(encryptedAesKey);
 			out.writeInt(signature.length);
 			out.write(signature);
-            out.write(encryptedDokument); 
+            out.write(encryptedDokument);
 			out.close();
 			
 		} catch (FileNotFoundException e) {
